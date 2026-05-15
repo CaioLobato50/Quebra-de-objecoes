@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach de Vendas IA — Caio Lobato</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2e;
+    --navy-mid: #152638;
+    --cream: #EEE8DC;
+    --cream-dim: #c8c0b4;
+    --gold: #C9A96E;
+    --gold-dim: #a8865a;
+    --blue-light: #6a9bc0;
+    --teal-light: #9FE1CB;
+    --coral-light: #F0997B;
+    --amber-light: #FAC775;
+    --purple-light: #AFA9EC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--cream); min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+  .page { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  .header { margin-bottom: 2rem; animation: fadeUp 0.5s ease both; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(201,169,110,0.1); border: 0.5px solid rgba(201,169,110,0.28);
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 14px;
+  }
+  h1 { font-family: 'DM Serif Display', serif; font-size: clamp(26px, 5vw, 38px); line-height: 1.15; margin-bottom: 6px; }
+  h1 span { color: var(--gold); }
+  .tagline { font-size: 13px; color: var(--cream-dim); font-weight: 300; line-height: 1.6; }
+
+  .ctx-pill {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(29,158,117,0.08); border: 0.5px solid rgba(29,158,117,0.2);
+    border-radius: 10px; padding: 11px 14px;
+    font-size: 12px; color: var(--teal-light); line-height: 1.6;
+    margin-bottom: 1.5rem; animation: fadeUp 0.5s 0.05s ease both;
+  }
+  .ctx-pill svg { flex-shrink: 0; margin-top: 1px; width: 15px; height: 15px; }
+
+  .form-card {
+    background: var(--navy-mid); border: 0.5px solid rgba(238,232,220,0.09);
+    border-radius: 16px; padding: 1.25rem 1.5rem;
+    margin-bottom: 10px; animation: fadeUp 0.5s 0.1s ease both;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media(max-width:480px){ .form-row{ grid-template-columns:1fr; } }
+
+  .lbl { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 5px; }
+
+  select, textarea {
+    width: 100%; background: rgba(238,232,220,0.05); border: 0.5px solid rgba(238,232,220,0.14);
+    border-radius: 8px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  select:focus, textarea:focus { border-color: rgba(201,169,110,0.45); }
+  select {
+    padding: 9px 32px 9px 12px; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23c8c0b4' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    background-color: rgba(238,232,220,0.05);
+  }
+  select option { background: #152638; color: var(--cream); }
+  textarea { padding: 11px 12px; resize: vertical; line-height: 1.65; }
+  textarea::placeholder { color: rgba(238,232,220,0.28); }
+  #conversa { min-height: 120px; }
+  #contexto { min-height: 55px; }
+
+  .btn {
+    width: 100%; padding: 13px; background: var(--gold); color: var(--navy);
+    border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; letter-spacing: 0.02em;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+  .btn:hover { background: var(--gold-dim); }
+  .btn:active { transform: scale(0.99); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .dots { display: none; gap: 4px; align-items: center; }
+  .dots.on { display: flex; }
+  .dot { width: 5px; height: 5px; background: var(--navy); border-radius: 50%; animation: blink 1.2s ease-in-out infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+
+  .err { display:none; background:rgba(163,45,45,0.15); border:0.5px solid rgba(163,45,45,0.3); border-radius:8px; padding:11px 14px; font-size:13px; color:#F7C1C1; margin-top:10px; }
+  .err.on { display:block; }
+
+  .results { display:none; margin-top:1.75rem; }
+  .results.on { display:block; animation: fadeUp 0.4s ease both; }
+
+  .sec { font-size:10px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--cream-dim); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .sec::after { content:''; flex:1; height:0.5px; background:rgba(238,232,220,0.08); }
+
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  @media(max-width:480px){ .g2{ grid-template-columns:1fr; } }
+
+  .card { background:var(--navy-mid); border:0.5px solid rgba(238,232,220,0.09); border-radius:12px; padding:15px; }
+  .card.mb { margin-bottom:10px; }
+  .card.c-gold { border-color:rgba(201,169,110,0.28); }
+  .card.c-teal { border-color:rgba(29,158,117,0.28); }
+  .card.c-blue { border-color:rgba(42,90,140,0.38); }
+
+  .ey { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .ey svg { width:13px; height:13px; }
+  .eg{color:var(--gold)} .et{color:var(--teal-light)} .eb{color:var(--blue-light)}
+  .ec{color:var(--coral-light)} .ep{color:var(--purple-light)} .ea{color:var(--amber-light)}
+
+  .body { font-size:13px; color:var(--cream); line-height:1.68; font-weight:300; }
+
+  .tone-pill { display:inline-block; padding:3px 11px; border-radius:20px; font-size:12px; font-weight:500; margin-bottom:5px; background:rgba(29,158,117,0.14); color:var(--teal-light); border:0.5px solid rgba(29,158,117,0.28); }
+  .sub { font-size:12px; color:var(--cream-dim); font-weight:300; display:block; margin-top:4px; }
+
+  .obj-item { padding:9px 0; border-bottom:0.5px solid rgba(238,232,220,0.07); }
+  .obj-item:last-child { border-bottom:none; padding-bottom:0; }
+  .obj-name { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--coral-light); margin-bottom:3px; }
+  .obj-resp { font-size:13px; color:var(--cream); line-height:1.65; font-weight:300; }
+
+  .script-box { background:rgba(42,90,140,0.14); border-left:2px solid var(--blue-light); border-radius:0 8px 8px 0; padding:13px 15px; font-size:13px; line-height:1.78; color:var(--cream); font-weight:300; white-space:pre-wrap; }
+
+  .copy-btn { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:6px 13px; background:transparent; border:0.5px solid rgba(106,155,192,0.35); border-radius:6px; color:var(--blue-light); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; transition:background 0.15s; }
+  .copy-btn:hover { background:rgba(42,90,140,0.18); }
+  .copy-btn svg { width:12px; height:12px; }
+
+  .urg { display:inline-block; padding:3px 11px; border-radius:20px; font-size:12px; font-weight:500; margin-bottom:5px; }
+  .u-alta { background:rgba(163,45,45,.18); color:#F7C1C1; border:0.5px solid rgba(163,45,45,.35); }
+  .u-media { background:rgba(186,117,23,.18); color:var(--amber-light); border:0.5px solid rgba(186,117,23,.35); }
+  .u-baixa { background:rgba(29,158,117,.14); color:var(--teal-light); border:0.5px solid rgba(29,158,117,.3); }
+
+  .footer { text-align:center; margin-top:3rem; font-size:11px; color:rgba(238,232,220,0.18); font-weight:300; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Coach de Vendas IA
+    </div>
+    <h1>Analise a conversa.<br><span>Feche o cliente.</span></h1>
+    <p class="tagline">Cole o histórico da negociação e receba diagnóstico tático, quebra de objeções e a mensagem certa pra enviar agora.</p>
+  </div>
+
+  <div class="ctx-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>Agente treinado no seu produto: <strong>Site para autônomos R$350 + R$70/mês</strong>, sem contrato obrigatório, com upgrade para gestão de tráfego pago. Público: prestadores de serviços (eletricistas, montadores, manicures, lash techs e similares).</span>
+  </div>
+
+  <div class="form-card">
+    <div class="form-row">
+      <div>
+        <label class="lbl" for="canal">Canal</label>
+        <select id="canal">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="instagram">Instagram DM</option>
+          <option value="ambos">WhatsApp + Instagram</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="etapa">Etapa da negociação</label>
+        <select id="etapa">
+          <option value="primeiro_contato">Primeiro contato</option>
+          <option value="proposta_enviada">Proposta enviada</option>
+          <option value="followup">Follow-up / Sem retorno</option>
+          <option value="objecao_preco">Objeção de preço</option>
+          <option value="quase_fechando">Quase fechando</option>
+          <option value="perdido_reativar">Lead perdido / Reativar</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label class="lbl" for="conversa">Conversa completa (cole aqui)</label>
+      <textarea id="conversa" placeholder="Ex:&#10;Cliente: quanto custa um site?&#10;Eu: R$350 pra criar + R$70/mês pra manter no ar&#10;Cliente: tá caro, vou pensar...&#10;&#10;[cole o histórico completo]"></textarea>
+    </div>
+    <div>
+      <label class="lbl" for="contexto">Contexto extra (opcional)</label>
+      <textarea id="contexto" placeholder="Ex: eletricista autônomo, Curitiba, viu meu anúncio no Instagram, não respondeu há 2 dias..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn" id="btn" onclick="analisar()">
+    <span id="btxt">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-3px;margin-right:3px"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      Analisar e gerar orientações
+    </span>
+    <span class="dots" id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+  </button>
+
+  <div class="err" id="err"></div>
+
+  <div class="results" id="results">
+
+    <div class="sec" style="margin-top:1.75rem;">Diagnóstico</div>
+    <div class="g2" style="margin-bottom:1.25rem;">
+      <div class="card c-gold">
+        <div class="ey eg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Situação real
+        </div>
+        <div class="body" id="r-diag"></div>
+      </div>
+      <div class="card">
+        <div class="ey et">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Tom recomendado
+        </div>
+        <div class="body" id="r-tom"></div>
+      </div>
+    </div>
+
+    <div class="sec">Quebra de objeções</div>
+    <div class="card c-blue mb">
+      <div class="ey ec">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Objeções identificadas
+      </div>
+      <div class="body" id="r-obj"></div>
+    </div>
+
+    <div class="sec">Próxima mensagem</div>
+    <div class="card mb">
+      <div class="ey eb">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Mensagem pronta para enviar
+      </div>
+      <div class="script-box" id="r-script"></div>
+      <button class="copy-btn" onclick="copiar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar mensagem
+      </button>
+    </div>
+
+    <div class="sec">Ação</div>
+    <div class="g2" style="margin-bottom:10px;">
+      <div class="card">
+        <div class="ey ep">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Urgência
+        </div>
+        <div class="body" id="r-urg"></div>
+      </div>
+      <div class="card c-teal">
+        <div class="ey et">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Próximo passo agora
+        </div>
+        <div class="body" id="r-prox"></div>
+      </div>
+    </div>
+
+    <div class="sec">Oportunidade de upgrade</div>
+    <div class="card c-gold">
+      <div class="ey ea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Momento certo para oferecer tráfego pago?
+      </div>
+      <div class="body" id="r-upsell"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">Coach de Vendas IA — Caio Lobato</div>
+</div>
+
+<script>
+const SYSTEM = `Você é um especialista sênior em vendas consultivas com profundo conhecimento do mercado de prestadores de serviços autônomos no Brasil.
+
+PRODUTO SENDO VENDIDO:
+- Site profissional para autônomos: R$350 (criação, pagamento único)
+- Hospedagem/manutenção: R$70/mês (mantém o site no ar, sem contrato mínimo obrigatório)
+- Upgrade opcional: gestão de tráfego pago (Meta Ads e Google Ads) para quem quer crescer com anúncios pagos
+
+DIFERENCIAIS REAIS:
+- Entrega rápida, site pronto em poucos dias
+- Sem contrato de fidelidade, pode cancelar quando quiser
+- Preço acessível para quem está começando ou quer crescer
+- Site feito para o perfil do autônomo, não é template genérico
+- Possibilidade de evoluir para anúncios depois
+
+PÚBLICO-ALVO:
+Prestadores de serviços autônomos: eletricistas, montadores de móveis, manicures, lash techs, pintores, encanadores, diaristas, técnicos em geral, personal trainers e similares. Trabalham por indicação, têm pouca ou nenhuma presença digital, não entendem muito de internet e tomam decisões com base em confiança e custo-benefício imediato.
+
+OBJEÇÕES E COMO PENSAR EM CADA UMA:
+1. Preço alto / tá caro: R$350 é menos que 1 dia de trabalho para a maioria. R$70/mês é menos que qualquer conta fixa que já pagam. Comparar com o custo de perder um único cliente para um concorrente que tem site.
+2. Não precisa de site / trabalha por indicação: Quando indicam alguém, a primeira coisa que fazem é pesquisar no Google ou Instagram. Sem site, a indicação perde força ou vai para o concorrente que aparece primeiro.
+3. Não sabe se vai valer a pena / incerteza: Um único cliente novo já paga o site inteiro. Autônomo cobra em média R$200 a R$800 por serviço. O ROI é imediato se vier 1 cliente a mais por mês.
+4. Não vai ter retorno / ceticismo: Não precisa acreditar primeiro. Começa, testa, e cancela quando quiser. Sem contrato, sem risco.
+5. Perda de tempo / não prioriza: O site trabalha por ele 24 horas. Enquanto ele está fazendo um serviço, o site está captando o próximo cliente.
+6. Sumiu / sem resposta: Pode ser correria do dia a dia, timidez ou indecisão. Reativar com leveza e curiosidade, sem pressionar.
+
+REGRA DO UPSELL:
+Tráfego pago só faz sentido oferecer quando o cliente já está convicto do site ou já tem site ativo. Nunca oferecer no primeiro contato. É uma segunda venda separada, não misturar com a venda do site.
+
+Sua missão: analisar a conversa e entregar orientações práticas, diretas e aplicáveis agora. Sem teoria, sem enrolação, sem rodeios.`;
+
+const ETAPA_L = {
+  primeiro_contato:'Primeiro contato com o lead',
+  proposta_enviada:'Proposta enviada, aguardando retorno',
+  followup:'Follow-up, lead sumiu ou não respondeu',
+  objecao_preco:'Objeção de preço explícita',
+  quase_fechando:'Quase fechando, lead hesitando no final',
+  perdido_reativar:'Lead perdido, tentativa de reativação'
+};
+const CANAL_L = {
+  whatsapp:'WhatsApp',
+  instagram:'Instagram DM',
+  ambos:'WhatsApp e Instagram DM'
+};
+
+async function analisar() {
+  const conversa = document.getElementById('conversa').value.trim();
+  if (!conversa) { document.getElementById('conversa').focus(); return; }
+
+  const etapa = document.getElementById('etapa').value;
+  const canal = document.getElementById('canal').value;
+  const ctx = document.getElementById('contexto').value.trim();
+
+  loading(true);
+  document.getElementById('results').classList.remove('on');
+  document.getElementById('err').classList.remove('on');
+
+  const prompt = `CANAL: ${CANAL_L[canal]}
+ETAPA: ${ETAPA_L[etapa]}
+${ctx ? 'CONTEXTO EXTRA: ' + ctx : ''}
+
+CONVERSA:
+${conversa}
+
+Analise e responda SOMENTE em JSON válido, sem markdown, sem backticks, sem nenhum texto fora do JSON:
+{
+  "diagnostico": "2-3 frases diretas: o que está acontecendo, onde o lead está emocionalmente e qual o real bloqueio para fechar",
+  "tom": "Tom exato recomendado para a próxima mensagem",
+  "tom_justificativa": "1 frase explicando por que esse tom funciona aqui",
+  "objecoes": [
+    {"objecao": "Nome curto da objeção", "resposta": "Resposta tática direta e persuasiva usando os argumentos do produto"},
+    {"objecao": "Segunda objeção se houver", "resposta": "Resposta tática"}
+  ],
+  "script": "Mensagem pronta para copiar e enviar. Tom humano, de igual para igual, sem parecer vendedor. Use \\n para quebras de linha. Máximo 6 linhas.",
+  "urgencia": "alta | media | baixa",
+  "urgencia_motivo": "1 frase curta explicando o nível de urgência",
+  "proximo_passo": "Ação concreta e específica a fazer nas próximas 2 horas",
+  "upsell": "1-2 frases: vale oferecer upgrade de tráfego pago agora? Se sim, como abordar. Se não, quando seria o momento certo."
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1400,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `Erro ${res.status}`);
+    }
+
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const r = JSON.parse(clean);
+    render(r);
+  } catch(e) {
+    const el = document.getElementById('err');
+    el.textContent = 'Erro: ' + (e.message || 'Tente novamente.');
+    el.classList.add('on');
+  } finally {
+    loading(false);
+  }
+}
+
+function render(r) {
+  document.getElementById('r-diag').textContent = r.diagnostico;
+  document.getElementById('r-tom').innerHTML = `<span class="tone-pill">${r.tom}</span><span class="sub">${r.tom_justificativa}</span>`;
+
+  const objEl = document.getElementById('r-obj');
+  objEl.innerHTML = '';
+  (r.objecoes || []).forEach(o => {
+    const d = document.createElement('div');
+    d.className = 'obj-item';
+    d.innerHTML = `<div class="obj-name">${o.objecao}</div><div class="obj-resp">${o.resposta}</div>`;
+    objEl.appendChild(d);
+  });
+  if (!(r.objecoes || []).length) objEl.textContent = 'Nenhuma objeção clara ainda. Bom momento para avançar direto pro fechamento.';
+
+  document.getElementById('r-script').textContent = r.script;
+
+  const uMap = {alta:'u-alta',media:'u-media',baixa:'u-baixa'};
+  const uLabel = {alta:'Alta',media:'Média',baixa:'Baixa'};
+  document.getElementById('r-urg').innerHTML = `<span class="urg ${uMap[r.urgencia]}">${uLabel[r.urgencia]}</span><span class="sub">${r.urgencia_motivo}</span>`;
+
+  document.getElementById('r-prox').textContent = r.proximo_passo;
+  document.getElementById('r-upsell').textContent = r.upsell;
+
+  document.getElementById('results').classList.add('on');
+}
+
+function copiar() {
+  const txt = document.getElementById('r-script').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const b = document.querySelector('.copy-btn');
+    b.textContent = '✓ Copiado!';
+    setTimeout(() => {
+      b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar mensagem`;
+    }, 2000);
+  });
+}
+
+function loading(on) {
+  document.getElementById('btn').disabled = on;
+  document.getElementById('btxt').style.display = on ? 'none' : 'flex';
+  document.getElementById('dots').classList.toggle('on', on);
+}
+</script>
+</body>
+</html>
