@@ -34,7 +34,7 @@
 
   .lbl { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 7px; }
 
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+  .seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px; }
   @media (max-width: 520px) { .seg { grid-template-columns: 1fr; } }
   .seg button {
     padding: 11px 10px; border-radius: 10px; cursor: pointer;
@@ -119,6 +119,7 @@
     <button type="button" data-oferta="delivery">Delivery e restaurantes</button>
     <button type="button" data-oferta="bcore">Clínicas (BCore)</button>
     <button type="button" data-oferta="autonomos">Sites para autônomos</button>
+    <button type="button" data-oferta="trafego">Tráfego pago (outros nichos)</button>
   </div>
 
   <label class="lbl" for="conversa">Conversa ou última resposta do lead</label>
@@ -317,7 +318,7 @@
   // Exemplo de link (para o Leads Finder abrir já preenchido):
   //   ?oferta=delivery&ctx=Brutus%20Hamburgueria%2C%2070%20avalia%C3%A7%C3%B5es%2C%20s%C3%B3%20iFood
   (function iniciar() {
-    var validas = ['delivery', 'bcore', 'autonomos'];
+    var validas = ['delivery', 'bcore', 'autonomos', 'trafego'];
     var p = new URLSearchParams(location.search);
     var o = p.get('oferta') || lerLS('coach_oferta') || 'delivery';
     marcarOferta(validas.indexOf(o) >= 0 ? o : 'delivery');
